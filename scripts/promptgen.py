@@ -25,6 +25,30 @@ current = Model()
 base_dir = scripts.basedir()
 models_dir = os.path.join(base_dir, "models")
 
+# 英文->中文的翻译模型
+class EnZhTranslator:
+    def __init__(self, cache_dir=models_dir, model_name="Helsinki-NLP/opus-mt-en-zh"):
+        self.model_name = model_name
+
+        # 加载模型和tokenizer
+        self.model = transformers.MarianMTModel.from_pretrained(self.model_name, cache_dir=cache_dir)
+        self.tokenizer = transformers.MarianTokenizer.from_pretrained(self.model_name, cache_dir=cache_dir)
+
+    def translate(self, en_str: str) -> str:
+        # 对句子进行分词
+        input_ids = self.tokenizer.encode(en_str, return_tensors="pt", padding=True)
+
+        # 进行翻译
+        output_ids = self.model.generate(input_ids)
+
+        # 将翻译结果转换为字符串格式
+        chinese_str = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        #如果最后有一个.，则去掉
+        if chinese_str[-1] == '.':
+            chinese_str = chinese_str[:-1]
+        return chinese_str
+    
+translator = EnZhTranslator()
 
 def device():
     return devices.cpu if shared.opts.promptgen_device == 'cpu' else devices.device
@@ -125,6 +149,7 @@ def generate(id_task, model_name, batch_count, batch_size, text, *args):
 <td>
 <div class="prompt gr-box gr-text-input">
     <p id='promptgen_res_{index}'>{html.escape(generated_text)}</p>
+    <p id='promptgen_tran_res_{index}'>{html.escape(translator.translate(generated_text))}</p>
 </div>
 </td>
 <td class="sendto">

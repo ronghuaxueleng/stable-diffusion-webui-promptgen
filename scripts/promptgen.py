@@ -29,10 +29,10 @@ models_dir = os.path.join(base_dir, "models")
 class EnZhTranslator:
     def __init__(self, cache_dir=models_dir, model_name="Helsinki-NLP/opus-mt-en-zh"):
         self.model_name = model_name
-
         # 加载模型和tokenizer
-        self.model = transformers.MarianMTModel.from_pretrained(self.model_name, cache_dir=cache_dir)
-        self.tokenizer = transformers.MarianTokenizer.from_pretrained(self.model_name, cache_dir=cache_dir)
+        path = os.path.join(cache_dir, model_name)
+        self.model = transformers.MarianMTModel.from_pretrained(path)
+        self.tokenizer = transformers.MarianTokenizer.from_pretrained(path)
 
     def translate(self, en_str: str) -> str:
         # 对句子进行分词
@@ -42,11 +42,7 @@ class EnZhTranslator:
         output_ids = self.model.generate(input_ids)
 
         # 将翻译结果转换为字符串格式
-        chinese_str = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-        #如果最后有一个.，则去掉
-        if chinese_str[-1] == '.':
-            chinese_str = chinese_str[:-1]
-        return chinese_str
+        return self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
     
 translator = EnZhTranslator()
 

@@ -56,14 +56,12 @@ def list_available_models():
     os.makedirs(models_dir, exist_ok=True)
 
     for dirname in os.listdir(models_dir):
-        if os.path.isdir(os.path.join(models_dir, dirname)):
-            available_models.append(dirname)
-
-    for name in [x.strip() for x in shared.opts.promptgen_names.split(",")]:
-        if not name:
-            continue
-
-        available_models.append(name)
+        sub_dir = os.path.join(models_dir, dirname)
+        if dirname != 'Helsinki-NLP' and os.path.isdir(sub_dir):
+            for subdirname in os.listdir(sub_dir):
+                last_path = os.path.join(sub_dir, subdirname)
+                if os.path.isdir(last_path):
+                    available_models.append(dirname + "/" + subdirname)
 
 
 def get_model_path(name):

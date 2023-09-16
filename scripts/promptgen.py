@@ -31,13 +31,18 @@ class EnZhTranslator:
         self.model_name = model_name
         # 加载模型和tokenizer
         path = os.path.join(cache_dir, model_name)
-        model = transformers.AutoModelForSeq2SeqLM.from_pretrained(path)
-        tokenizer = transformers.AutoTokenizer.from_pretrained(path)
-        self.en2zh = transformers.pipeline("translation_en_to_zh", model=model, tokenizer=tokenizer)
+        self.model = transformers.MarianMTModel.from_pretrained(path)
+        self.tokenizer = transformers.MarianTokenizer.from_pretrained(path)
 
     def translate(self, en_str: str) -> str:
+        # 对句子进行分词
+        input_ids = self.tokenizer.encode(en_str, return_tensors="pt", padding=True)
+
+        # 进行翻译
+        output_ids = self.model.generate(input_ids)
+
         # 将翻译结果转换为字符串格式
-        return self.en2zh(en_str, max_length=2048)[0]["translation_text"]
+        return self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
     
 translator = EnZhTranslator()
 

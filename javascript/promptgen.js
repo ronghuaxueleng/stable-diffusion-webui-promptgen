@@ -1,5 +1,6 @@
 
 function promptgen_send_to(where, text){
+    console.log(text)
     textarea = gradioApp().querySelector('#promptgen_selected_text textarea')
     textarea.value = text
     updateInput(textarea)

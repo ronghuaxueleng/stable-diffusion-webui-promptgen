@@ -25,6 +25,7 @@ current = Model()
 base_dir = scripts.basedir()
 models_dir = os.path.join(base_dir, "models")
 
+
 # 英文->中文的翻译模型
 class EnZhTranslator:
     def __init__(self, cache_dir=models_dir, model_name="Helsinki-NLP/opus-mt-en-zh"):
@@ -38,8 +39,10 @@ class EnZhTranslator:
     def translate(self, en_str: str) -> str:
         # 将翻译结果转换为字符串格式
         return self.en2zh(en_str, max_length=2048)[0]["translation_text"]
-    
+
+
 translator = EnZhTranslator()
+
 
 def device():
     return devices.cpu if shared.opts.promptgen_device == 'cpu' else devices.device
@@ -67,7 +70,8 @@ def get_model_path(name):
     return dirname
 
 
-def generate_batch(input_ids, min_length, max_length, num_beams, temperature, repetition_penalty, length_penalty, sampling_mode, top_k, top_p):
+def generate_batch(input_ids, min_length, max_length, num_beams, temperature, repetition_penalty, length_penalty,
+                   sampling_mode, top_k, top_p):
     top_p = float(top_p) if sampling_mode == 'Top P' else None
     top_k = int(top_k) if sampling_mode == 'Top K' else None
 
@@ -171,7 +175,9 @@ def add_tab():
     with gr.Blocks(analytics_enabled=False) as tab:
         with gr.Row():
             with gr.Column(scale=80):
-                prompt = gr.Textbox(label="Prompt", elem_id="promptgen_prompt", show_label=False, lines=2, placeholder="Beginning of the prompt (press Ctrl+Enter or Alt+Enter to generate)").style(container=False)
+                prompt = gr.Textbox(label="Prompt", elem_id="promptgen_prompt", show_label=False, lines=2,
+                                    placeholder="Beginning of the prompt (press Ctrl+Enter or Alt+Enter to generate)").style(
+                    container=False)
             with gr.Column(scale=10):
                 submit = gr.Button('Generate', elem_id="promptgen_generate", variant='primary')
 
@@ -182,26 +188,37 @@ def add_tab():
                 send_to_img2img = gr.Button(elem_id='promptgen_send_to_img2img', visible=False)
 
                 with FormRow():
-                    model_selection = gr.Dropdown(label="Model", elem_id="promptgen_model", value=available_models[0], choices=["None"] + available_models)
+                    model_selection = gr.Dropdown(label="Model", elem_id="promptgen_model", value=available_models[0],
+                                                  choices=["None"] + available_models)
 
                 with FormRow():
-                    sampling_mode = gr.Radio(label="Sampling mode", elem_id="promptgen_sampling_mode", value="Top K", choices=["Top K", "Top P"])
+                    sampling_mode = gr.Radio(label="Sampling mode", elem_id="promptgen_sampling_mode", value="Top K",
+                                             choices=["Top K", "Top P"])
                     top_k = gr.Slider(label="Top K", elem_id="promptgen_top_k", value=12, minimum=1, maximum=50, step=1)
-                    top_p = gr.Slider(label="Top P", elem_id="promptgen_top_p", value=0.15, minimum=0, maximum=1, step=0.001)
+                    top_p = gr.Slider(label="Top P", elem_id="promptgen_top_p", value=0.15, minimum=0, maximum=1,
+                                      step=0.001)
 
                 with gr.Row():
-                    num_beams = gr.Slider(label="Number of beams", elem_id="promptgen_num_beams", value=1, minimum=1, maximum=8, step=1)
-                    temperature = gr.Slider(label="Temperature", elem_id="promptgen_temperature", value=1, minimum=0, maximum=4, step=0.01)
-                    repetition_penalty = gr.Slider(label="Repetition penalty", elem_id="promptgen_repetition_penalty", value=1, minimum=1, maximum=4, step=0.01)
+                    num_beams = gr.Slider(label="Number of beams", elem_id="promptgen_num_beams", value=1, minimum=1,
+                                          maximum=8, step=1)
+                    temperature = gr.Slider(label="Temperature", elem_id="promptgen_temperature", value=1, minimum=0,
+                                            maximum=4, step=0.01)
+                    repetition_penalty = gr.Slider(label="Repetition penalty", elem_id="promptgen_repetition_penalty",
+                                                   value=1, minimum=1, maximum=4, step=0.01)
 
                 with FormRow():
-                    length_penalty = gr.Slider(label="Length preference", elem_id="promptgen_length_preference", value=1, minimum=-10, maximum=10, step=0.1)
-                    min_length = gr.Slider(label="Min length", elem_id="promptgen_min_length", value=20, minimum=1, maximum=400, step=1)
-                    max_length = gr.Slider(label="Max length", elem_id="promptgen_max_length", value=150, minimum=1, maximum=400, step=1)
+                    length_penalty = gr.Slider(label="Length preference", elem_id="promptgen_length_preference",
+                                               value=1, minimum=-10, maximum=10, step=0.1)
+                    min_length = gr.Slider(label="Min length", elem_id="promptgen_min_length", value=20, minimum=1,
+                                           maximum=400, step=1)
+                    max_length = gr.Slider(label="Max length", elem_id="promptgen_max_length", value=150, minimum=1,
+                                           maximum=400, step=1)
 
                 with FormRow():
-                    batch_count = gr.Slider(label="Batch count", elem_id="promptgen_batch_count", value=1, minimum=1, maximum=100, step=1)
-                    batch_size = gr.Slider(label="Batch size", elem_id="promptgen_batch_size", value=10, minimum=1, maximum=100, step=1)
+                    batch_count = gr.Slider(label="Batch count", elem_id="promptgen_batch_count", value=1, minimum=1,
+                                            maximum=100, step=1)
+                    batch_size = gr.Slider(label="Batch size", elem_id="promptgen_batch_size", value=10, minimum=1,
+                                           maximum=100, step=1)
 
                 with open(os.path.join(base_dir, "explanation.html"), encoding="utf8") as file:
                     footer = file.read()
@@ -215,7 +232,8 @@ def add_tab():
         submit.click(
             fn=ui.wrap_gradio_gpu_call(generate, extra_outputs=['']),
             _js="submit_promptgen",
-            inputs=[model_selection, model_selection, batch_count, batch_size, prompt, min_length, max_length, num_beams, temperature, repetition_penalty, length_penalty, sampling_mode, top_k, top_p, ],
+            inputs=[model_selection, model_selection, batch_count, batch_size, prompt, min_length, max_length,
+                    num_beams, temperature, repetition_penalty, length_penalty, sampling_mode, top_k, top_p, ],
             outputs=[res, res_info]
         )
 
@@ -243,8 +261,11 @@ def add_tab():
 def on_ui_settings():
     section = ("promptgen", "Promptgen")
 
-    shared.opts.add_option("promptgen_names", shared.OptionInfo("AUTOMATIC/promptgen-lexart, AUTOMATIC/promptgen-majinai-safe, AUTOMATIC/promptgen-majinai-unsafe", "Hugginface model names for promptgen, separated by comma", section=section))
-    shared.opts.add_option("promptgen_device", shared.OptionInfo("gpu", "Device to use for text generation", gr.Radio, {"choices": ["gpu", "cpu"]}, section=section))
+    shared.opts.add_option("promptgen_names", shared.OptionInfo(
+        "AUTOMATIC/promptgen-lexart, AUTOMATIC/promptgen-majinai-safe, AUTOMATIC/promptgen-majinai-unsafe",
+        "Hugginface model names for promptgen, separated by comma", section=section))
+    shared.opts.add_option("promptgen_device", shared.OptionInfo("gpu", "Device to use for text generation", gr.Radio,
+                                                                 {"choices": ["gpu", "cpu"]}, section=section))
 
 
 def on_unload():
